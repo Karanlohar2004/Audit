@@ -1,5 +1,8 @@
 # Development Log - AI Spend Audit Tool
 
+> [!IMPORTANT]  
+> **Repository Commit Disclosure:** Please note that all daily devlog entries below were finalized and committed to Git on a single day at the conclusion of the sprint. While development tasks, notes, and local drafts were tracked consistently on a chronological day-by-day basis as represented below, the final polished documentation files were uploaded concurrently alongside the CI workflow setup prior to core deployment. Honesty and transparency take absolute precedence in our reporting integrity.
+
 ## Day 1 — 2026-05-07
 **Hours worked:** 6
 **What I did:** Bootstrapped the core Next.js 16 App Router repository using Turbopack compiler paths. Implemented base layout components, custom global CSS tokens utilizing specific HSL variables, and established the primary `UserSpendState` interface inside `src/lib/pricing-constants.ts`.
