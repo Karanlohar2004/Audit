@@ -1,39 +1,75 @@
 # Architecture - Lead-Generation AI Spend Audit Tool
 
-## System Overview
-The **AI Spend Audit Tool** is a high-performance Next.js application designed to act as an advanced lead-generation mechanism for an AI infrastructure enterprise. Startups enter their headcount and existing AI software/API expenses to receive an instant, mathematically defensible audit identifying immediate financial optimizations and credit arbitrage opportunities.
+## System Overview & Diagram
+
+The **AI Spend Audit Tool** functions as a highly optimized, dual-tier application where high-speed client interactions gracefully convert unknown software operators into qualified infrastructure routing targets. 
 
 ```mermaid
 graph TD
-    A[Client UI Form] -->|State Hydration/Persistence| B(LocalStorage State)
-    A -->|Submit Audit Payload| C{Next.js App Router API}
-    C -->|Calculate Savings Math| D[Audit Engine Core]
-    C -->|Generate Custom Audit| E[Anthropic API / Summarize]
-    E -->|Timeout / API Error| F[Fallback Structured Template]
-    C -->|Persist Lead Data| G[(PostgreSQL DB / Supabase)]
-    C -->|Trigger Notification| H[Transactional Email Service]
-    C -->|Anonymize Payload| I[Public Shareable DB Table]
-    I --> J[Dynamic Public URL w/ Open Graph]
+    %% Frontend Interaction Layer
+    subgraph Client App Runtime
+        UI[SpendForm Component] -->|onChange / React Sync| L[localStorage Persistence]
+        UI -->|Calculate Baseline Math| Engine[lib/audit-engine.ts]
+        Engine -->|Hydrate Immediate UI| Counters[Immediate Gratification Counters]
+        Counters -->|Trigger Intent Overlay| Gate{Value Gate Overlay}
+    end
+
+    %% Edge / Proxy Router Layer
+    subgraph Server Runtime / API Gateways
+        Gate -->|Submit Verified Email| LeadsAPI[POST /api/leads]
+        Gate -->|Submit Custom Context| SumAPI[POST /api/summarize]
+        Gate -->|Anonymize Payload| SharesAPI[POST /api/shares]
+    end
+
+    %% Data & Network Integrations
+    LeadsAPI -->|Persist SQL Records| DB[(Enterprise Supabase Core)]
+    LeadsAPI -->|Dispatch Automation| Mail[Transactional SMTP Node]
+    
+    SumAPI -->|Authorized Token Fetch| OpenAI[OpenAI Chat Completions Endpoint]
+    SumAPI -->|4.5s Circuit Breaker| Fallback[Deterministic Template Assembler]
+    
+    SharesAPI -->|Serialize MD5/UUID| HashStore[(Anonymized Results Matrix)]
+    HashStore --> ShareLink[Dynamic Rendered Audit URL]
 ```
 
-## Design Philosophy & Constraints
+---
 
-### 1. Separation of Financial Logic
-*   **Constraint:** Mathematical computation must strictly avoid non-deterministic AI generation.
-*   **Implementation:** All savings equations are pre-compiled within `lib/audit-engine.ts` referencing immutable matrices inside `PRICING_DATA.md`. This guarantees zero hallucinations when presenting enterprise-grade cost adjustments.
+## Detailed Data Flow: From Form Input to Audit Result
 
-### 2. High-Conversion Lead Flow ("Value Gate")
-*   To prevent drop-off while qualifying robust intent, the frontend utilizes progressive disclosure:
-    1.  **Stage 1 (Immediate Gratification):** Displays absolute monthly/annual savings counters directly upon form completion.
-    2.  **Stage 2 (The Gate):** Itemized breakdown paths, raw API optimizations, and custom LLM synthesis trigger an overlay requiring a verified business email.
+1. **Client Event Interception:** As the user adjusts input ranges (e.g., toggling Cursor seats from 0 to 12), controlled React state fires synchronous calculations passing `UserSpendState` objects into `runSpendAudit()`.
+2. **Deterministic Rules Evaluation:** The core calculation runtime iterates over target software modules. If duplications exist (e.g., active Copilot and Cursor seats concurrently), the engine zeroes out secondary assistant lines and assigns the exact cost difference to `monthlySavings` arrays.
+3. **Progressive Intent Trapping:** Calculated savings immediately render within sticky banner components to establish immediate user trust. However, specific overlap text, LLM summaries, and cloud credit maps remain obscured beneath a glassmorphic blurred screen.
+4. **Proxy Route Hydration:** Entering a valid corporate address triggers parallel client invocations to `fetch('/api/summarize')` and `fetch('/api/leads')`. 
+5. **Secure External Synthesis:** The server route injects strict system CFO prompt variables alongside the sanitized mathematical breakdown array, sending an authenticated request to downstream completion APIs while keeping API secrets completely invisible to network packet inspectors.
+6. **Result Presentation:** Once compiled, the interface unblurs instantly, presenting interactive chart matrices, personalized summary responses, and programmatic public sharing link payloads.
 
-### 3. Fault-Tolerant LLM Integration
-*   **Primary Pathway:** `Anthropic API` (Claude 3.5 Sonnet / Haiku) generates a crisp ~100-word bespoke assessment tailored to the user's explicit combination of dev tools.
-*   **Circuit Breaker:** If the API times out (>4.5s) or returns rate limits, the client transparently routes to a client-side typed fallback template assembler to maintain seamless UI fidelity.
+---
 
-## Folder Structure & Module Boundaries
+## Technical Stack Rationale
 
-*   `app/api/leads/route.ts`: Handles validation, persistent database writes, and email generation payload mapping.
-*   `app/api/shares/route.ts`: Extracts Personally Identifiable Information (PII) to yield public sharing hashes.
-*   `components/spend-form/`: Controlled React form leveraging persistent hooks (`useEffect` state sync).
-*   `components/audit-results/`: Rich UI charts, interactive saving sliders, and custom design tokens adhering to strict HSL standards.
+### 1. Next.js 16 (App Router)
+- **Why:** Allows clean segregation of highly static user-facing marketing boundaries (`/`) from dynamic internal backend handlers (`/api/*`). The build system pre-renders marketing wrappers for zero layout shift (CLS) and premium Search Engine Optimization indexability.
+
+### 2. TypeScript (Strict Mode)
+- **Why:** Financial accounting tools cannot tolerate type-coercion bugs. Explicit typing across calculation payload models guarantees runtime safety and predictability during client side hydration loops.
+
+### 3. Vanilla CSS / Tailwind Design Tokens
+- **Why:** Enables responsive dark-mode styling utilizing curated HSL palettes. Avoids heavy external CSS frameworks to retain complete visual dominance over micro-animations and smooth layout transitions.
+
+### 4. Native fetch API with Circuit Breakers
+- **Why:** Integrating lightweight `AbortController` timeouts ensures web server threads are never kept indefinitely busy waiting for external foundation LLM network backlogs.
+
+---
+
+## Scaling Roadmap: Handling 10,000 Audits per Day
+
+If incoming throughput scales to **10,000 completed audits daily**, the current synchronous backend proxy routing will require three specific infrastructure adjustments to prevent database deadlocks and API limit saturation:
+
+### 1. Edge-Layer Prompt Response Caching
+- **Implementation:** Introduce Redis/Vercel KV caching arrays indexing identical combination signatures. If two distinct 15-person startups enter identical tooling matrices, the server bypasses the downstream OpenAI API entirely, returning the pre-synthesized executive summary from memory in `<15ms`.
+
+### 2. Asynchronous Queue Processing for Lead Sinks
+- **Implementation:** Offload `/api/leads` database write transactions to background queue workers (e.g., Upstash QStash or RabbitMQ). The API route returns an instant `HTTP 202 Accepted` acknowledgement, protecting primary Supabase connection pools during extreme traffic bursts.
+
+### 3. Read-Replica Routing for Dynamic Shares
+- **Implementation:** Because generated share links (`/audit/[shareId]`) are highly viral and read-heavy, database read requests must route to globally distributed read-replicas, keeping primary write nodes completely dedicated to continuous lead tracking.
