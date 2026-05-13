@@ -12,9 +12,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
 
-    // Construct the context instructions mapping to Anthropic API requirements
+    // Construct the context instructions mapping to OpenAI API requirements
     const systemPrompt = `You are a high-level SaaS CFO Consultant auditing a startup's AI tool spend. Write an executive summary (~100 words) using professional, finance-literate tone. Focus strictly on their overspend risks, tier overlaps, and concrete pure cash savings recommendations. Avoid generic platitudes.`;
     const userContent = `Audit these parameters:
     Headcount: ${spendData.headcount}
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
     // If no API key is specified, route directly to fallback to prevent production client breaking
     if (!apiKey || apiKey === 'mock_or_unconfigured') {
-      console.log('[LLM Integration] Anthropic API Key unconfigured. Executing graceful templated synthesis fallback.');
+      console.log('[LLM Integration] OpenAI API Key unconfigured. Executing graceful templated synthesis fallback.');
       return NextResponse.json({
         success: true,
         summary: buildFallbackTemplate(),
@@ -53,35 +53,36 @@ export async function POST(request: Request) {
       });
     }
 
-    // Call real Anthropic API with strict 4.5 second circuit breaker
+    // Call real OpenAI API with strict 4.5 second circuit breaker
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 4500);
 
     try {
-      const anthropicResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      const openAiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
+          model: 'gpt-4o-mini',
           max_tokens: 250,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: userContent }],
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userContent },
+          ],
         }),
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
-      if (!anthropicResponse.ok) {
-        throw new Error(`Anthropic endpoint returned HTTP ${anthropicResponse.status}`);
+      if (!openAiResponse.ok) {
+        throw new Error(`OpenAI endpoint returned HTTP ${openAiResponse.status}`);
       }
 
-      const data = await anthropicResponse.json();
-      const summaryText = data.content?.[0]?.text || buildFallbackTemplate();
+      const data = await openAiResponse.json();
+      const summaryText = data.choices?.[0]?.message?.content || buildFallbackTemplate();
 
       return NextResponse.json({
         success: true,
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
       });
     } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
-      console.warn('[LLM Timeout/Fault] Anthropic Gateway connection aborted. Safely engaging deterministic fallback template.', fetchError);
+      console.warn('[LLM Timeout/Fault] OpenAI Gateway connection aborted. Safely engaging deterministic fallback template.', fetchError);
       return NextResponse.json({
         success: true,
         summary: buildFallbackTemplate(),
